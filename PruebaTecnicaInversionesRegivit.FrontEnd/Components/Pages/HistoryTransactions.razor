@@ -1,0 +1,148 @@
+﻿@page "/history"
+@using PruebaTecnicaInversionesRegivit.FrontEnd.Services
+@using PruebaTecnicaInversionesRegivit.Shared.DTOs.Transaction
+
+<PageTitle>Historial</PageTitle>
+
+<div class="mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center">
+            <i class="fas fa-piggy-bank text-primary fs-3 me-3"></i>
+            <h3 class="mb-0 text-primary">Historial de Transacciones</h3>
+        </div>
+    </div>
+</div>
+
+<div class="card shadow-sm mb-3">
+    <div class="card-body p-2">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="small text-muted mb-1">Cliente</label>
+                <input type="text" class="form-control form-control-sm"
+                       @bind="accountNumber" placeholder="Buscar..." />
+            </div>
+
+            <div class="col-md-4">
+                <label class="small text-muted mb-1">Rango Fechas</label>
+                <div class="input-group input-group-sm">
+                    <input type="date" class="form-control form-control-sm"
+                           @bind="fromDateFilter" aria-label="Desde" />
+                    <span class="input-group-text">-</span>
+                    <input type="date" class="form-control form-control-sm"
+                           @bind="toDateFilter" aria-label="Hasta" />
+                </div>
+            </div>
+
+            <div class="col-md-3">
+                <div class="d-flex gap-2">
+                    <button class="btn btn-primary btn-sm flex-grow-1"
+                            @onclick="ApplyFilters">
+                        <i class="fas fa-filter me-1"></i> Filtrar
+                    </button>
+                    <button class="btn btn-outline-secondary btn-sm"
+                            @onclick="ResetFilters" title="Limpiar">
+                        <i class="fas fa-undo-alt"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (transactionData == null)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p>Cargando historial...</p>
+    </div>
+}
+else if (!transactionData.Any())
+{
+    <div class="alert alert-info">No se encontraron trnnsacciones!</div>
+} else
+{
+    <Grid TItem="TransactionGetDto"
+          Class="table table-hover table-bordered table-striped"
+          Data="filteredTransactions"
+          AllowPaging="true"
+          PageSize="5">
+
+        <GridColumns>
+            <GridColumn TItem="TransactionGetDto" HeaderText="Número de Cuenta" PropertyName="Account.AccountNumber">
+                @context.Account.AccountNumber
+            </GridColumn>
+
+            <GridColumn TItem="TransactionGetDto" HeaderText="Monto" PropertyName="Amount">
+                @context.Amount
+            </GridColumn>
+
+            <GridColumn TItem="TransactionGetDto" HeaderText="Tipo" PropertyName="TransactionType.Name">
+                <span class="text-uppercase">@context.TransactionType.Name</span>
+            </GridColumn>
+
+            <GridColumn TItem="TransactionGetDto" HeaderText="Saldo Resultante" PropertyName="ResultingBalance">
+                <span class="fw-bold">@context.ResultingBalance.ToString("C")</span>
+            </GridColumn>
+
+            
+
+            <GridColumn TItem="TransactionGetDto" HeaderText="Fecha Transacción" PropertyName="TransactionDate">
+                @context.TransactionDate.ToString("dd/MM/yyyy HH:mm")
+            </GridColumn>
+        </GridColumns>
+    </Grid>
+}
+
+@code {
+    private IEnumerable<TransactionGetDto>? transactionData;
+    [Inject]
+    private IRepository Repository { get; set; } = null!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await GetAllTransactions();
+    }
+
+    private async Task GetAllTransactions()
+    {
+        try
+        {
+            var url = "/api/Transaction";
+            transactionData = await Repository.GetAsync<List<TransactionGetDto>>(url);
+            filteredTransactions = transactionData;
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading accounts: {ex.Message}");
+            transactionData = Enumerable.Empty<TransactionGetDto>();
+        }
+    }
+
+    //Filters
+    private IEnumerable<TransactionGetDto>? filteredTransactions;
+    private string accountNumber = string.Empty;
+    private DateTime? fromDateFilter;
+    private DateTime? toDateFilter;
+
+    private Task ApplyFilters()
+    {
+        // Todo:Filters
+
+        return Task.CompletedTask;
+    }
+
+    private async Task ResetFilters()
+    {
+        accountNumber = string.Empty;
+        fromDateFilter = null;
+        toDateFilter = null;
+        filteredTransactions = transactionData;
+        await Task.CompletedTask;
+    }
+
+
+
+}
