@@ -1,6 +1,7 @@
 ﻿@page "/history"
 @using PruebaTecnicaInversionesRegivit.FrontEnd.Services
 @using PruebaTecnicaInversionesRegivit.Shared.DTOs.Transaction
+@inject ToastService ToastService
 
 <PageTitle>Historial</PageTitle>
 
@@ -16,12 +17,7 @@
 <div class="card shadow-sm mb-3">
     <div class="card-body p-2">
         <div class="row g-2 align-items-end">
-            <div class="col-md-3">
-                <label class="small text-muted mb-1">Cliente</label>
-                <input type="text" class="form-control form-control-sm"
-                       @bind="accountNumber" placeholder="Buscar..." />
-            </div>
-
+          
             <div class="col-md-4">
                 <label class="small text-muted mb-1">Rango Fechas</label>
                 <div class="input-group input-group-sm">
@@ -30,6 +26,12 @@
                     <span class="input-group-text">-</span>
                     <input type="date" class="form-control form-control-sm"
                            @bind="toDateFilter" aria-label="Hasta" />
+                    @if (isInvalidDateRange)
+                    {
+                        <div class="invalid-feedback">
+                            La fecha final no puede ser menor que la fecha inicial
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -123,26 +125,35 @@ else if (!transactionData.Any())
 
     //Filters
     private IEnumerable<TransactionGetDto>? filteredTransactions;
-    private string accountNumber = string.Empty;
     private DateTime? fromDateFilter;
     private DateTime? toDateFilter;
+    private bool isInvalidDateRange = false;
 
     private Task ApplyFilters()
     {
+        isInvalidDateRange = fromDateFilter.HasValue && toDateFilter.HasValue && toDateFilter.Value < fromDateFilter.Value;
+
+        if (isInvalidDateRange)
+        {
+            ToastService.Notify(new(ToastType.Warning, "La fecha de Inicio no puede ser mayor que la fecha final"));
+            return Task.CompletedTask;
+        };
+
         // Todo:Filters
+        filteredTransactions = transactionData.Where(t =>
+           (!fromDateFilter.HasValue || t.TransactionDate >= fromDateFilter.Value) &&
+           (!toDateFilter.HasValue || t.TransactionDate <= toDateFilter.Value.AddDays(1).AddTicks(-1))
+       ).ToList();
 
         return Task.CompletedTask;
     }
 
     private async Task ResetFilters()
     {
-        accountNumber = string.Empty;
         fromDateFilter = null;
         toDateFilter = null;
         filteredTransactions = transactionData;
         await Task.CompletedTask;
     }
-
-
 
 }
