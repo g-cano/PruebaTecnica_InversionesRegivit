@@ -12,7 +12,7 @@ using PruebaTecnicaInversionesRegivit.Backend.Data;
 namespace PruebaTecnicaInversionesRegivit.Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250628214358_InitialCreated")]
+    [Migration("20250629015417_InitialCreated")]
     partial class InitialCreated
     {
         /// <inheritdoc />
