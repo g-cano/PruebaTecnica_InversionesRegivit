@@ -12,6 +12,7 @@ namespace PruebaTecnicaInversionesRegivit.Shared.DTOs.Account
     {
         public int Id { get; set; }
         public string AccountNumber { get; set; }
+        public string AccountName { get; set; }
         public decimal Balance { get; set; }    
         public int ClientId { get; set; }
         public int CreatedById { get; set; }

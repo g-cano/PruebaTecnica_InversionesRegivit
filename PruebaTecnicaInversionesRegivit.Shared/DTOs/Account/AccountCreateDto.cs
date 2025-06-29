@@ -10,5 +10,6 @@ namespace PruebaTecnicaInversionesRegivit.Shared.DTOs.Account
     public class AccountCreateDto
     {
         public int ClientId { get; set; }
+        public string AccountName { get; set; }
     } 
 }

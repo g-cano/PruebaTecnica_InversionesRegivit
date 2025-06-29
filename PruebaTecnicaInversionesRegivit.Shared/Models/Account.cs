@@ -16,6 +16,8 @@ namespace PruebaTecnicaInversionesRegivit.Shared.Models
         [StringLength(20)]
         public string AccountNumber { get; set; }
 
+        public string? AccountName { get; set; }
+
         [Column(TypeName = "decimal(18,2)")]
         public decimal Balance { get; set; } = 0;
 

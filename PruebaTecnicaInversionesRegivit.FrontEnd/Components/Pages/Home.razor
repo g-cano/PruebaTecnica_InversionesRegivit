@@ -1,6 +1,7 @@
 ﻿@page "/"
 @using PruebaTecnicaInversionesRegivit.FrontEnd.Services
 @using PruebaTecnicaInversionesRegivit.Shared.DTOs.Account
+@using PruebaTecnicaInversionesRegivit.Shared.DTOs.Client
 @using PruebaTecnicaInversionesRegivit.Shared.DTOs.Transaction
 @using PruebaTecnicaInversionesRegivit.Shared.Models
 @inject ToastService ToastService
@@ -14,9 +15,9 @@
             <h3 class="mb-0 text-primary">Gestión de Cuentas</h3>
         </div>
         <div>
-            <button class="btn btn-primary">
+            <Button Class="btn btn-primary" @onclick="OnShowModalAccountClick">
                 Nueva Cuenta
-            </button>
+            </Button>
         </div>
     </div>
 </div>
@@ -98,10 +99,40 @@ else
             <Button Color="ButtonColor.Primary" @onclick=CreateTransaction>Guardar</Button>
         </FooterTemplate>
     </Modal>
+
+    <!--Modal for Create Account-->
+    <Modal @ref="modalAccount" title="Crear Nueva Cuenta" UseStaticBackdrop="true" CloseOnEscape="false">
+        <BodyTemplate>
+            <EditForm Model="@accountForm">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Seleccione al Cliente*</label>
+                    <InputSelect @bind-value="accountForm.ClientId" class="form-select">
+                        @foreach(var client in clients) {
+                            <option value="@client.Id">@client.Name</option>
+                        }
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Nombre de la Cuenta*</label>
+                    <InputText @bind-value="accountForm.AccountName" class="form-control" />
+                </div>
+            </EditForm>
+        </BodyTemplate>
+        <FooterTemplate>
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalAccountClick">Cerrar</Button>
+            <Button Color="ButtonColor.Primary" @onclick=CreateAccount>Guardar</Button>
+        </FooterTemplate>
+    </Modal>
 }
 
 @code {
     private IEnumerable<AccountGetDto>? accountsData;
+    private List<ClientGetDto>? clients;
+
     [Inject]
     private IRepository Repository { get; set; } = null!;
     private int accountIdGlobal;
@@ -165,11 +196,55 @@ else
             ToastService.Notify(new(ToastType.Danger, $"Error: {ex.Message}"));
         }
 
-        
-    
-        
+
+
+
     }
 
+
+    //Modal New Client
+    public AccountCreateDto accountForm { get; set; } = new();
+    private Modal modalAccount = default!;
+
+    private async Task OnShowModalAccountClick()
+    {
+        await GetAllClients();
+        await modalAccount.ShowAsync();
+    }
+
+    private async Task OnHideModalAccountClick()
+    {
+        await modalAccount.HideAsync();
+    }
+
+    private async Task CreateAccount()
+    {
+       
+        try
+        {
+            var url = $"/api/Account";
+            var account = new AccountCreateDto
+            {
+                ClientId = (int)accountForm.ClientId,
+                AccountName = accountForm.AccountName
+            };
+            var response = await Repository.PostAsync(url, account);
+            await GetAllAccounts();
+            await modalAccount.HideAsync();
+            ToastService.Notify(new(
+                ToastType.Success,
+                "Se ha creado una nueva cuenta." 
+            ));
+        }
+        catch (Exception ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Error: {ex.Message}"));
+        }
+
+
+
+
+    }
     
 
     private async Task GetAllAccounts()
@@ -178,6 +253,21 @@ else
         {
             var url = "/api/Account";
             accountsData = await Repository.GetAsync<List<AccountGetDto>>(url);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading accounts: {ex.Message}");
+            accountsData = Enumerable.Empty<AccountGetDto>();
+        }
+    }
+
+    private async Task GetAllClients()
+    {
+        try
+        {
+            var url = "/api/Client";
+            clients = await Repository.GetAsync<List<ClientGetDto>>(url);
 
         }
         catch (Exception ex)

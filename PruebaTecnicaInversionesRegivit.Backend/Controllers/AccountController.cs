@@ -55,6 +55,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
         {
             Id = a.Id,
             AccountNumber = a.AccountNumber,
+            AccountName = a.AccountName,
             Balance = a.Balance,
             CreatedAt = a.CreatedAt,
             Client = new ClientGetDto
@@ -106,6 +107,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
                 CreatedAt = DateTime.UtcNow,
 
             };
+            if (accountDto.AccountName != null) account.AccountName = accountDto.AccountName;
             _context.Accounts.Add(account);
             await _context.SaveChangesAsync();
             return Ok(account);
