@@ -2,6 +2,8 @@ using PruebaTecnicaInversionesRegivit.FrontEnd.Components;
 using PruebaTecnicaInversionesRegivit.FrontEnd.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Services.AddBlazorBootstrap();
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
