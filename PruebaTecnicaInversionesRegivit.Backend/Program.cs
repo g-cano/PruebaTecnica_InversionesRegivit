@@ -13,6 +13,10 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
+builder.Services.AddCors(options => options.AddPolicy("AllowSpecificOrigins", policy =>
+{
+    policy.WithOrigins("https://localhost:7281").AllowAnyMethod().AllowAnyHeader();
+}));
 
 var app = builder.Build();
 

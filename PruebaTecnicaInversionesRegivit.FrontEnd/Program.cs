@@ -5,6 +5,8 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+var url = "https://localhost:7281";
+builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(url) });
 
 var app = builder.Build();
 
