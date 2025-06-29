@@ -1,7 +1,29 @@
 ﻿@page "/"
+@using PruebaTecnicaInversionesRegivit.FrontEnd.Services
+@using PruebaTecnicaInversionesRegivit.Shared.DTOs.Account
+@using PruebaTecnicaInversionesRegivit.Shared.Models
 
 <PageTitle>Home</PageTitle>
 
 <h1>Hello, world!</h1>
 
 Welcome to your new app.
+
+<div>
+    @foreach (var account in accounts)
+    {
+        <p>@account.AccountNumber</p>
+    }
+</div>
+
+
+@code {
+    private List<AccountGetDto> accounts = new();
+    [Inject] IRepository Repository { get; set; } = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var url = "/api/Account";
+        accounts = await Repository.GetAsync<List<AccountGetDto>>(url);
+    }
+}

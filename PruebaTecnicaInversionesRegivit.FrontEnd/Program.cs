@@ -1,4 +1,5 @@
 using PruebaTecnicaInversionesRegivit.FrontEnd.Components;
+using PruebaTecnicaInversionesRegivit.FrontEnd.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -7,6 +8,7 @@ builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 var url = "https://localhost:7281";
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(url) });
+builder.Services.AddScoped<IRepository, Repository>();
 
 var app = builder.Build();
 
