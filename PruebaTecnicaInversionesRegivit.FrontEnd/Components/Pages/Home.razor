@@ -1,7 +1,9 @@
 ﻿@page "/"
 @using PruebaTecnicaInversionesRegivit.FrontEnd.Services
 @using PruebaTecnicaInversionesRegivit.Shared.DTOs.Account
+@using PruebaTecnicaInversionesRegivit.Shared.DTOs.Transaction
 @using PruebaTecnicaInversionesRegivit.Shared.Models
+@inject ToastService ToastService
 
 <PageTitle>Cuentas</PageTitle>
 
@@ -59,9 +61,9 @@ else
 
             <GridColumn TItem="AccountGetDto" HeaderText="Transacciones">
                 <div class="d-flex align-items-center justify-content-center">
-                    <button class="btn btn-sm btn-warning me-2" >
+                    <Button Class="btn btn-sm btn-warning me-2" @onclick="() => OnShowModalTransactionClick(context.Id)">
                          Crear
-                    </button>
+                    </Button>
                     <button class="btn btn-sm btn-info">
                          Ver
                     </button>
@@ -69,14 +71,108 @@ else
             </GridColumn>
         </GridColumns>
     </Grid>
+
+    <!--Modal for Create Transaction-->
+    <Modal @ref="modalTransaction" title="Crear Transaccón" UseStaticBackdrop="true" CloseOnEscape="false">
+        <BodyTemplate>
+            <EditForm Model="@transactionForm">
+                <DataAnnotationsValidator />
+                <ValidationSummary />
+
+                <div class="mb-3">
+                    <label class="form-label">Tipo de Transacción*</label>
+                    <InputSelect @bind-value="transactionForm.TransactionTypeId" class="form-select">
+                        <option value="1">Depósito</option>
+                        <option value="2">Retiro</option>
+                    </InputSelect>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label">Monto*</label>
+                    <InputNumber @bind-value="transactionForm.Amount" class="form-control" />
+                </div>
+            </EditForm>
+        </BodyTemplate>
+        <FooterTemplate>
+            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalTransactionClick">Cerrar</Button>
+            <Button Color="ButtonColor.Primary" @onclick=CreateTransaction>Guardar</Button>
+        </FooterTemplate>
+    </Modal>
 }
 
 @code {
     private IEnumerable<AccountGetDto>? accountsData;
     [Inject]
     private IRepository Repository { get; set; } = null!;
+    private int accountIdGlobal;
 
     protected override async Task OnInitializedAsync()
+    {
+        await GetAllAccounts();
+    }
+
+    //Modal Transaction
+    public TransactionCreateDto transactionForm { get; set; } = new();
+    private Modal modalTransaction = default!;
+
+    private async Task OnShowModalTransactionClick(int accountId)
+    {
+        accountIdGlobal = accountId;
+        await modalTransaction.ShowAsync();
+    }
+
+    private async Task OnHideModalTransactionClick()
+    {
+        await modalTransaction.HideAsync();
+    }
+
+    private async  Task CreateTransaction()
+    {
+        if (transactionForm.TransactionTypeId == null || transactionForm.Amount == null)
+        {
+            ToastService.Notify(new(ToastType.Danger, "Debe de ingresar la información de todos los campos."));
+            return;
+        }
+
+        if ((int)transactionForm.Amount <= 0)
+        {
+            ToastService.Notify(new(ToastType.Danger, "El monto debe ser mayor de cero."));
+            return;
+        }
+        try {
+            //TODO: Agregar el campo de Fecha de Transicion manual por defecto, fehca de hoy
+            var url = $"/api/Transaction/{accountIdGlobal}";
+            var transaction = new TransactionCreateDto
+                {
+                    Amount = (int)transactionForm.Amount,
+                    CreatedById = 1,
+                    AccountId = accountIdGlobal,
+                    TransactionTypeId = (int)transactionForm.TransactionTypeId
+                };
+            var response = await Repository.PostAsync(url, transaction);
+            await GetAllAccounts();
+            await modalTransaction.HideAsync();
+            // Sh
+            ToastService.Notify(new(
+                ToastType.Success,
+                $"Se ha {(transactionForm.TransactionTypeId == 1 ? "depositado" : "retirado")} " +
+                $"la cantidad de ${transactionForm.Amount} con éxito."
+            ));
+
+
+        } catch(Exception ex)
+        {
+            ToastService.Notify(new(ToastType.Danger, $"Error: {ex.Message}"));
+        }
+
+        
+    
+        
+    }
+
+    
+
+    private async Task GetAllAccounts()
     {
         try
         {
@@ -90,6 +186,4 @@ else
             accountsData = Enumerable.Empty<AccountGetDto>();
         }
     }
-
-   
 }
