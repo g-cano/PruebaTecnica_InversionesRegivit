@@ -42,8 +42,8 @@
                         <div class="d-flex align-items-center mb-2">
                             <i class="fas fa-coins text-secondary me-2"></i>
                             <span class="fw-bold">Saldo Disponible:</span>
-                            <span class="ms-2 @(accountData.Balance >= 0 ? "text-success" : "text-danger")">
-                                @accountData.Balance.ToString("C")
+                            <span class="ms-2 text-success">
+                                <strong>@accountData.Balance.ToString("C")</strong>
                             </span>
                         </div>
                     </div>

@@ -103,9 +103,15 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
 
             } else if (transactionDto.TransactionTypeId == 2)
             {
-                
-                if (account.Balance < transactionDto.Amount)
-                    throw new InvalidOperationException("Saldo insuficiente");
+
+                if (account.Balance <= transactionDto.Amount)
+                    return BadRequest("Saldo insuficiente");
+
+                // Validar límite diario
+                var dailyWithdrawals = await GetDailyWithdrawals(accountId);
+                if (dailyWithdrawals + transactionDto.Amount > 5000)
+                    throw new InvalidOperationException("Excede el límite diario de retiros (USD 5,000)");
+
                 try
                 {
                     account.Balance -= transactionDto.Amount;

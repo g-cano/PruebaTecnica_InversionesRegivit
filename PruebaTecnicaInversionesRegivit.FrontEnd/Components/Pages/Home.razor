@@ -63,7 +63,7 @@ else
 
             <GridColumn TItem="AccountGetDto" HeaderText="Transacciones">
                 <div class="d-flex align-items-center justify-content-center">
-                    <Button Class="btn btn-sm btn-warning me-2" @onclick="() => OnShowModalTransactionClick(context.Id)">
+                    <Button Class="btn btn-sm btn-warning me-2" @onclick="() => OnShowModalTransactionClick(context.Id, context.Balance)">
                          Crear
                     </Button>
                     <Button Class="btn btn-sm btn-info" @onclick="() => RouteToViewAccountTransaction(context.Id)">
@@ -141,6 +141,7 @@ else
     [Inject]
     private IRepository Repository { get; set; } = null!;
     private int accountIdGlobal;
+    private decimal BalanceGlobal;
 
     protected override async Task OnInitializedAsync()
     {
@@ -151,9 +152,10 @@ else
     public TransactionCreateDto transactionForm { get; set; } = new();
     private Modal modalTransaction = default!;
 
-    private async Task OnShowModalTransactionClick(int accountId)
+    private async Task OnShowModalTransactionClick(int accountId, decimal balance)
     {
         accountIdGlobal = accountId;
+        BalanceGlobal = balance;
         transactionForm.TransactionDate = DateTime.Now;
         await modalTransaction.ShowAsync();
     }
@@ -168,6 +170,12 @@ else
         if (transactionForm.TransactionTypeId == null || transactionForm.Amount == null)
         {
             ToastService.Notify(new(ToastType.Danger, "Debe de ingresar la información de todos los campos."));
+            return;
+        }
+
+        if (BalanceGlobal == 0 && (int)transactionForm.TransactionTypeId == 2)
+        {
+            ToastService.Notify(new(ToastType.Danger, "No tiene fondos para realizar esta operacion"));
             return;
         }
 
@@ -190,7 +198,6 @@ else
             var response = await Repository.PostAsync(url, transaction);
             await GetAllAccounts();
             await modalTransaction.HideAsync();
-            // Sh
             ToastService.Notify(new(
                 ToastType.Success,
                 $"Se ha {(transactionForm.TransactionTypeId == 1 ? "depositado" : "retirado")} " +
@@ -200,6 +207,7 @@ else
 
         } catch(Exception ex)
         {
+            Console.WriteLine(ex);
             ToastService.Notify(new(ToastType.Danger, $"Error: {ex.Message}"));
         }
 
@@ -221,6 +229,8 @@ else
 
     private async Task OnHideModalAccountClick()
     {
+        accountForm.AccountName = null;
+        accountForm.ClientId = 0;
         await modalAccount.HideAsync();
     }
 
