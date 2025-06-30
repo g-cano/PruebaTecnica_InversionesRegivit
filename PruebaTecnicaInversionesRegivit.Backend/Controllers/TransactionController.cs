@@ -31,6 +31,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
                 .Include(t => t.TransactionType)
                 .Include(t => t.CreatedBy)
                 .Include(t => t.Account)
+                .OrderByDescending(t => t.RecordDate)
                 .Select(t => new TransactionGetDto
                 {
                     Id = t.Id,
@@ -110,7 +111,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
                 // Validar límite diario
                 var dailyWithdrawals = await GetDailyWithdrawals(accountId);
                 if (dailyWithdrawals + transactionDto.Amount > 5000)
-                    throw new InvalidOperationException("Excede el límite diario de retiros (USD 5,000)");
+                    return BadRequest("Excede el límite diario de retiros (USD 5,000)");
 
                 try
                 {
@@ -152,6 +153,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
                 .Include(t => t.TransactionType)
                 .Include(t => t.CreatedBy)
                 .Include(t => t.Account)
+                .OrderByDescending(t => t.RecordDate)
                 .Select(t => new TransactionGetDto
                 {
                     Id = t.Id,
@@ -186,7 +188,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
         {
             var today = DateTime.UtcNow.Date;
             return await _context.Transactions
-                .Where(t => t.Id == accountId &&
+                .Where(t => t.AccountId == accountId &&
                            t.TransactionTypeId == 2 &&
                            t.RecordDate >= today)
                 .SumAsync(t => t.Amount);

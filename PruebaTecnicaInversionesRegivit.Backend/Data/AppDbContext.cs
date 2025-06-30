@@ -39,6 +39,55 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Data
                .HasForeignKey(t => t.TransactionTypeId)
                .OnDelete(DeleteBehavior.Restrict);
 
+           
+            modelBuilder.Entity<User>().HasData(
+                new User
+                {
+                    Id = 1,
+                    Username = "admin",
+                    Password = "admin123", 
+                    IsActive = true,
+                    Role = "ADMIN"
+                }
+            );
+
+            modelBuilder.Entity<Client>().HasData(
+                new Client
+                {
+                    Id = 1,
+                    Name = "Cliente Corporativo",
+                    Identification = "0101199909876",
+                    CreatedById = 1, 
+                    CreatedAt = DateTime.UtcNow,
+                },
+                new Client
+                {
+                    Id = 2,
+                    Name = "Cliente Individual",
+                    Identification = "0101199909876",
+                    CreatedById = 1,
+                    CreatedAt = DateTime.UtcNow,
+                }
+            );
+
+            modelBuilder.Entity<TransactionType>().HasData(
+                new TransactionType
+                {
+                    Id = 1,
+                    Name = "Depósito",
+                    Code = "DEP",
+                    Description = "Ingreso de fondos a la cuenta",
+                },
+                new TransactionType
+                {
+                    Id = 2,
+                    Name = "Retiro",
+                    Code = "RET",
+                    Description = "Extracción de fondos de la cuenta",
+                }
+                
+            );
+
         }
     }
 }

@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
+#pragma warning disable CA1814 // Prefer jagged arrays over multidimensional
+
 namespace PruebaTecnicaInversionesRegivit.Backend.Migrations
 {
     /// <inheritdoc />
@@ -71,6 +73,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Migrations
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     AccountNumber = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
+                    AccountName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Balance = table.Column<decimal>(type: "decimal(18,2)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ClientId = table.Column<int>(type: "int", nullable: false),
@@ -128,6 +131,29 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.InsertData(
+                table: "TransactionTypes",
+                columns: new[] { "Id", "Code", "Description", "Name" },
+                values: new object[,]
+                {
+                    { 1, "DEP", "Ingreso de fondos a la cuenta", "Depósito" },
+                    { 2, "RET", "Extracción de fondos de la cuenta", "Retiro" }
+                });
+
+            migrationBuilder.InsertData(
+                table: "Users",
+                columns: new[] { "Id", "IsActive", "Password", "Role", "Username" },
+                values: new object[] { 1, true, "admin123", "ADMIN", "admin" });
+
+            migrationBuilder.InsertData(
+                table: "Clients",
+                columns: new[] { "Id", "CreatedAt", "CreatedById", "Identification", "Name" },
+                values: new object[,]
+                {
+                    { 1, new DateTime(2025, 6, 30, 3, 36, 39, 230, DateTimeKind.Utc).AddTicks(1085), 1, "0101199909876", "Cliente Corporativo" },
+                    { 2, new DateTime(2025, 6, 30, 3, 36, 39, 230, DateTimeKind.Utc).AddTicks(1088), 1, "0101199909876", "Cliente Individual" }
                 });
 
             migrationBuilder.CreateIndex(

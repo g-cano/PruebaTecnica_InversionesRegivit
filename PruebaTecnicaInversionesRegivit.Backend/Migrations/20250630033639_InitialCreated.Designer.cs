@@ -12,7 +12,7 @@ using PruebaTecnicaInversionesRegivit.Backend.Data;
 namespace PruebaTecnicaInversionesRegivit.Backend.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250629015417_InitialCreated")]
+    [Migration("20250630033639_InitialCreated")]
     partial class InitialCreated
     {
         /// <inheritdoc />
@@ -32,6 +32,9 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AccountName")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("AccountNumber")
                         .IsRequired()
@@ -88,6 +91,24 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Migrations
                     b.HasIndex("CreatedById");
 
                     b.ToTable("Clients");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2025, 6, 30, 3, 36, 39, 230, DateTimeKind.Utc).AddTicks(1085),
+                            CreatedById = 1,
+                            Identification = "0101199909876",
+                            Name = "Cliente Corporativo"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            CreatedAt = new DateTime(2025, 6, 30, 3, 36, 39, 230, DateTimeKind.Utc).AddTicks(1088),
+                            CreatedById = 1,
+                            Identification = "0101199909876",
+                            Name = "Cliente Individual"
+                        });
                 });
 
             modelBuilder.Entity("PruebaTecnicaInversionesRegivit.Shared.Models.Transaction", b =>
@@ -153,6 +174,22 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TransactionTypes");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            Code = "DEP",
+                            Description = "Ingreso de fondos a la cuenta",
+                            Name = "Depósito"
+                        },
+                        new
+                        {
+                            Id = 2,
+                            Code = "RET",
+                            Description = "Extracción de fondos de la cuenta",
+                            Name = "Retiro"
+                        });
                 });
 
             modelBuilder.Entity("PruebaTecnicaInversionesRegivit.Shared.Models.User", b =>
@@ -183,6 +220,16 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            IsActive = true,
+                            Password = "admin123",
+                            Role = "ADMIN",
+                            Username = "admin"
+                        });
                 });
 
             modelBuilder.Entity("PruebaTecnicaInversionesRegivit.Shared.Models.Account", b =>

@@ -25,38 +25,31 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
         public async Task<ActionResult<IEnumerable<AccountGetDto>>> GetAllAccounts()
         {
             var accounts = await _context.Accounts
-        .Include(a => a.Client)          // Carga la relación con Client
-        .Include(a => a.CreatedBy)       // Carga la relación con User (CreatedBy)
-        .OrderBy(a => a.AccountNumber)
-        .Select(a => new AccountGetDto
-        {
-            Id = a.Id,
-            AccountNumber = a.AccountNumber,
-            AccountName = a.AccountName,
-            Balance = a.Balance,
-            CreatedAt = a.CreatedAt,
-            Client = new ClientGetDto
+            .Include(a => a.Client)         
+            .Include(a => a.CreatedBy)     
+            .OrderByDescending(a => a.CreatedAt)
+            .Select(a => new AccountGetDto
             {
-                Id = a.Client.Id,
-                Name = a.Client.Name,
-                Identification = a.Client.Identification
-            },
-            CreatedBy = new UserGetDto
-            {
-                Id = a.CreatedBy.Id,
-                Username = a.CreatedBy.Username,
-                Role = a.CreatedBy.Role
-            },
-            /*Transactions = a.Transactions.Select(t => new TransactionDto
-            {
-                Id = t.Id,
-                Amount = t.Amount,
-                TransactionDate = t.TransactionDate,
-                Type = t.TransactionType.Name
-            }).ToList()*/
-        })
-        .ToListAsync();
-            return Ok(accounts);
+                Id = a.Id,
+                AccountNumber = a.AccountNumber,
+                AccountName = a.AccountName,
+                Balance = a.Balance,
+                CreatedAt = a.CreatedAt,
+                Client = new ClientGetDto
+                {
+                    Id = a.Client.Id,
+                    Name = a.Client.Name,
+                    Identification = a.Client.Identification
+                },
+                CreatedBy = new UserGetDto
+                {
+                    Id = a.CreatedBy.Id,
+                    Username = a.CreatedBy.Username,
+                    Role = a.CreatedBy.Role
+                },
+            })
+            .ToListAsync();
+                return Ok(accounts);
         }
 
         [HttpGet("{id}")]
@@ -64,8 +57,8 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
         {
             var account = await _context.Accounts
             .Where(a => a.Id == id)
-            .Include(a => a.Client)          // Carga la relación con Client
-            .Include(a => a.CreatedBy)       // Carga la relación con User (CreatedBy)
+            .Include(a => a.Client)          
+            .Include(a => a.CreatedBy)      
             .OrderBy(a => a.AccountNumber)
             .Select(a => new AccountGetDto
             {

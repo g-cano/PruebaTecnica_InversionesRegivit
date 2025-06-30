@@ -53,6 +53,10 @@ else
                 <span class="text-success fw-bold">@context.Balance.ToString("C")</span>
             </GridColumn>
 
+            <GridColumn TItem="AccountGetDto" HeaderText="Nombre del Cliente" PropertyName="AccountName">
+                @context.AccountName
+            </GridColumn>
+
             <GridColumn TItem="AccountGetDto" HeaderText="Nombre del Cliente" PropertyName="Client.Name">
                 @context.Client.Name
             </GridColumn>
@@ -73,70 +77,76 @@ else
             </GridColumn>
         </GridColumns>
     </Grid>
+}
 
-    <!--Modal for Create Transaction-->
-    <Modal @ref="modalTransaction" title="Crear Transaccón" UseStaticBackdrop="true" CloseOnEscape="false">
-        <BodyTemplate>
-            <EditForm Model="@transactionForm">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
-                <div class="mb-3">
-                    <label class="form-label">Fecha de la Transacción</label>
-                    <InputDate @bind-value="transactionForm.TransactionDate" class="form-control" />
-                </div>
+<!--Modal for Create Transaction-->
+<Modal @ref="modalTransaction" title="Crear Transaccón" UseStaticBackdrop="true" CloseOnEscape="false">
+    <BodyTemplate>
+        <EditForm Model="@transactionForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="mb-3">
+                <label class="form-label">Fecha de la Transacción</label>
+                <InputDate @bind-value="transactionForm.TransactionDate" class="form-control" />
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Tipo de Transacción*</label>
-                    <InputSelect @bind-value="transactionForm.TransactionTypeId" class="form-select">
-                        <option value="1">Depósito</option>
-                        <option value="2">Retiro</option>
-                    </InputSelect>
-                </div>
+            <div class="mb-3">
+                <label class="form-label">Tipo de Transacción*</label>
+                <InputSelect @bind-value="transactionForm.TransactionTypeId" class="form-select">
+                    <option value="1">Depósito</option>
+                    <option value="2">Retiro</option>
+                </InputSelect>
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Monto*</label>
-                    <InputNumber @bind-value="transactionForm.Amount" class="form-control" />
-                </div>
-            </EditForm>
-        </BodyTemplate>
-        <FooterTemplate>
-            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalTransactionClick">Cerrar</Button>
-            <Button Color="ButtonColor.Primary" @onclick=CreateTransaction>Guardar</Button>
-        </FooterTemplate>
-    </Modal>
+            <div class="mb-3">
+                <label class="form-label">Monto*</label>
+                <InputNumber @bind-value="transactionForm.Amount" class="form-control" />
+            </div>
+        </EditForm>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalTransactionClick">Cerrar</Button>
+        <Button Color="ButtonColor.Primary" @onclick=CreateTransaction>Guardar</Button>
+    </FooterTemplate>
+</Modal>
 
-    <!--Modal for Create Account-->
-    <Modal @ref="modalAccount" title="Crear Nueva Cuenta" UseStaticBackdrop="true" CloseOnEscape="false">
-        <BodyTemplate>
-            <EditForm Model="@accountForm">
-                <DataAnnotationsValidator />
-                <ValidationSummary />
+<!--Modal for Create Account-->
+<Modal @ref="modalAccount" title="Crear Nueva Cuenta" UseStaticBackdrop="true" CloseOnEscape="false">
+    <BodyTemplate>
+        <EditForm Model="@accountForm">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-                <div class="mb-3">
-                    <label class="form-label">Seleccione al Cliente*</label>
-                    <InputSelect @bind-value="accountForm.ClientId" class="form-select">
-                        @foreach(var client in clients) {
+            <div class="mb-3">
+                <label class="form-label">Seleccione al Cliente*</label>
+                <InputSelect @bind-value="accountForm.ClientId" class="form-select">
+                    @if (clients != null)
+                    {
+                        @foreach (var client in clients)
+                        {
                             <option value="@client.Id">@client.Name</option>
                         }
-                    </InputSelect>
-                </div>
+                    }
+                </InputSelect>
+            </div>
 
-                <div class="mb-3">
-                    <label class="form-label">Nombre de la Cuenta*</label>
-                    <InputText @bind-value="accountForm.AccountName" class="form-control" />
-                </div>
-            </EditForm>
-        </BodyTemplate>
-        <FooterTemplate>
-            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalAccountClick">Cerrar</Button>
-            <Button Color="ButtonColor.Primary" @onclick=CreateAccount>Guardar</Button>
-        </FooterTemplate>
-    </Modal>
-}
+            <div class="mb-3">
+                <label class="form-label">Nombre de la Cuenta*</label>
+                <InputText @bind-value="accountForm.AccountName" class="form-control" />
+            </div>
+        </EditForm>
+    </BodyTemplate>
+    <FooterTemplate>
+        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalAccountClick">Cerrar</Button>
+        <Button Color="ButtonColor.Primary" @onclick=CreateAccount>Guardar</Button>
+    </FooterTemplate>
+</Modal>
 
 @code {
     private IEnumerable<AccountGetDto>? accountsData;
     private List<ClientGetDto>? clients;
+    public AccountCreateDto accountForm { get; set; } = new();
+    private Modal modalAccount = default!;
 
     [Inject]
     private IRepository Repository { get; set; } = null!;
@@ -156,12 +166,16 @@ else
     {
         accountIdGlobal = accountId;
         BalanceGlobal = balance;
+        transactionForm.Amount = 0;
+        transactionForm.TransactionTypeId = 0;
         transactionForm.TransactionDate = DateTime.Now;
         await modalTransaction.ShowAsync();
     }
 
     private async Task OnHideModalTransactionClick()
     {
+        
+
         await modalTransaction.HideAsync();
     }
 
@@ -185,7 +199,6 @@ else
             return;
         }
         try {
-            //TODO: Agregar el campo de Fecha de Transicion manual por defecto, fehca de hoy
             var url = $"/api/Transaction/{accountIdGlobal}";
             var transaction = new TransactionCreateDto
                 {
@@ -203,24 +216,15 @@ else
                 $"Se ha {(transactionForm.TransactionTypeId == 1 ? "depositado" : "retirado")} " +
                 $"la cantidad de ${transactionForm.Amount} con éxito."
             ));
-
-
         } catch(Exception ex)
         {
             Console.WriteLine(ex);
             ToastService.Notify(new(ToastType.Danger, $"Error: {ex.Message}"));
         }
-
-
-
-
     }
 
 
     //Modal New Client
-    public AccountCreateDto accountForm { get; set; } = new();
-    private Modal modalAccount = default!;
-
     private async Task OnShowModalAccountClick()
     {
         await GetAllClients();
