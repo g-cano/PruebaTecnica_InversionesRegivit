@@ -4,6 +4,7 @@
 @using PruebaTecnicaInversionesRegivit.Shared.DTOs.Client
 @using PruebaTecnicaInversionesRegivit.Shared.DTOs.Transaction
 @using PruebaTecnicaInversionesRegivit.Shared.Models
+@inject NavigationManager Navigation
 @inject ToastService ToastService
 
 <PageTitle>Cuentas</PageTitle>
@@ -65,9 +66,9 @@ else
                     <Button Class="btn btn-sm btn-warning me-2" @onclick="() => OnShowModalTransactionClick(context.Id)">
                          Crear
                     </Button>
-                    <button class="btn btn-sm btn-info">
+                    <Button Class="btn btn-sm btn-info" @onclick="() => RouteToViewAccountTransaction(context.Id)">
                          Ver
-                    </button>
+                    </Button>
                 </div>
             </GridColumn>
         </GridColumns>
@@ -79,6 +80,10 @@ else
             <EditForm Model="@transactionForm">
                 <DataAnnotationsValidator />
                 <ValidationSummary />
+                <div class="mb-3">
+                    <label class="form-label">Fecha de la Transacción</label>
+                    <InputDate @bind-value="transactionForm.TransactionDate" class="form-control" />
+                </div>
 
                 <div class="mb-3">
                     <label class="form-label">Tipo de Transacción*</label>
@@ -149,6 +154,7 @@ else
     private async Task OnShowModalTransactionClick(int accountId)
     {
         accountIdGlobal = accountId;
+        transactionForm.TransactionDate = DateTime.Now;
         await modalTransaction.ShowAsync();
     }
 
@@ -178,7 +184,8 @@ else
                     Amount = (int)transactionForm.Amount,
                     CreatedById = 1,
                     AccountId = accountIdGlobal,
-                    TransactionTypeId = (int)transactionForm.TransactionTypeId
+                    TransactionTypeId = (int)transactionForm.TransactionTypeId,
+                    TransactionDate = transactionForm.TransactionDate
                 };
             var response = await Repository.PostAsync(url, transaction);
             await GetAllAccounts();
@@ -271,5 +278,11 @@ else
             Console.WriteLine($"Error loading accounts: {ex.Message}");
             accountsData = Enumerable.Empty<AccountGetDto>();
         }
+    }
+
+    //Route to View Account Transaction
+    private void RouteToViewAccountTransaction(int accountId)
+    {
+        Navigation.NavigateTo($"/account-transaction?id={accountId}");
     }
 }

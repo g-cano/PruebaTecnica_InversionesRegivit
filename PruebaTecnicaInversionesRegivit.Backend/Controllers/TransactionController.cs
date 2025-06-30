@@ -82,7 +82,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
                         AccountId = accountId,
                         Amount = transactionDto.Amount,
                         TransactionTypeId = 1,
-                        TransactionDate = DateTime.UtcNow,
+                        TransactionDate = transactionDto.TransactionDate,
                         RecordDate = DateTime.UtcNow,
                         ResultingBalance = account.Balance,
                         CreatedById = 1
@@ -114,7 +114,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
                         AccountId = accountId,
                         Amount = transactionDto.Amount,
                         TransactionTypeId = 2,
-                        TransactionDate = DateTime.UtcNow,
+                        TransactionDate = transactionDto.TransactionDate,
                         RecordDate = DateTime.UtcNow,
                         CreatedById = 1,
                         ResultingBalance = account.Balance
@@ -136,6 +136,44 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
             }
 
            
+        }
+
+        [HttpGet("{accountId}/account")]
+        public async Task<ActionResult<IEnumerable<TransactionGetDto>>> GetByAccountIdTransactions(int accountId)
+        {
+            var allTransactions = await _context.Transactions
+                .Where(t => t.AccountId == accountId)
+                .Include(t => t.TransactionType)
+                .Include(t => t.CreatedBy)
+                .Include(t => t.Account)
+                .Select(t => new TransactionGetDto
+                {
+                    Id = t.Id,
+                    Amount = t.Amount,
+                    TransactionDate = t.TransactionDate,
+                    RecordDate = t.RecordDate,
+                    ResultingBalance = t.ResultingBalance,
+                    CreatedBy = new UserGetDto
+                    {
+                        Id = t.CreatedBy.Id,
+                        Username = t.CreatedBy.Username,
+                        Role = t.CreatedBy.Role
+                    },
+                    Account = new AccountGetDto
+                    {
+                        Id = t.Account.Id,
+                        AccountNumber = t.Account.AccountNumber,
+                        Balance = t.Account.Balance
+                    },
+                    TransactionType = new TransactionTypeDto
+                    {
+                        Id = t.TransactionType.Id,
+                        Name = t.TransactionType.Name,
+                        Code = t.TransactionType.Code
+                    }
+
+                }).ToListAsync();
+            return Ok(allTransactions);
         }
 
         private async Task<decimal> GetDailyWithdrawals(int accountId)

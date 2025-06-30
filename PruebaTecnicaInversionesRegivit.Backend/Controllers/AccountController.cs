@@ -19,30 +19,7 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
         {
             _context = context;
         }
-        /*
-         [HttpGet]
-        public async Task<ActionResult<IEnumerable<ClientGetDto>>> GetAllClients()
-        {
-            var clients = await _context.Clients
-                .Include(c => c.CreatedBy)
-                .Select(c => new ClientGetDto
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Identification = c.Identification,
-                    CreatedAt = c.CreatedAt,
-                    CreatedBy = new UserGetDto
-                    {
-                        Id = c.CreatedBy.Id,
-                        Username = c.CreatedBy.Username,
-                        Role = c.CreatedBy.Role
-                    }
-                })
-                .ToListAsync();
-
-            return Ok(clients);
-        }
-         */
+     
 
         [HttpGet]
         public async Task<ActionResult<IEnumerable<AccountGetDto>>> GetAllAccounts()
@@ -80,6 +57,39 @@ namespace PruebaTecnicaInversionesRegivit.Backend.Controllers
         })
         .ToListAsync();
             return Ok(accounts);
+        }
+
+        [HttpGet("{id}")]
+        public async Task<ActionResult<IEnumerable<AccountGetDto>>> GetAccount(int id)
+        {
+            var account = await _context.Accounts
+            .Where(a => a.Id == id)
+            .Include(a => a.Client)          // Carga la relación con Client
+            .Include(a => a.CreatedBy)       // Carga la relación con User (CreatedBy)
+            .OrderBy(a => a.AccountNumber)
+            .Select(a => new AccountGetDto
+            {
+                Id = a.Id,
+                AccountNumber = a.AccountNumber,
+                AccountName = a.AccountName,
+                Balance = a.Balance,
+                CreatedAt = a.CreatedAt,
+                Client = new ClientGetDto
+                {
+                    Id = a.Client.Id,
+                    Name = a.Client.Name,
+                    Identification = a.Client.Identification
+                },
+                CreatedBy = new UserGetDto
+                {
+                    Id = a.CreatedBy.Id,
+                    Username = a.CreatedBy.Username,
+                    Role = a.CreatedBy.Role
+                },
+            })
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+            return Ok(account);
         }
 
         [HttpPost]

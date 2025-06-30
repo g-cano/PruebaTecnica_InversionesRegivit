@@ -1,0 +1,154 @@
+﻿@page "/account-transaction"
+@inject NavigationManager Navigation
+@using PruebaTecnicaInversionesRegivit.FrontEnd.Services
+@using PruebaTecnicaInversionesRegivit.Shared.DTOs.Account
+@using PruebaTecnicaInversionesRegivit.Shared.DTOs.Transaction
+@inject ToastService ToastService
+
+<PageTitle>Transacciones por Cuenta</PageTitle>
+
+<div class="mb-4">
+    <!-- Encabezado -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="d-flex align-items-center">
+            <button class="btn btn-sm btn-outline-primary me-3" @onclick="NavigateBack"
+                    title="Volver atrás">
+                <i class="fas fa-arrow-left me-1"></i> Regresar
+            </button>
+            <i class="fas fa-piggy-bank text-primary fs-3 me-3"></i>
+            <h3 class="mb-0 text-primary">Historial de Transacciones por Cuenta</h3>
+        </div>
+    </div>
+
+    <!-- Detalle de la Cuenta -->
+    @if (accountData != null)
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body py-3">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-wallet text-secondary me-2"></i>
+                            <span class="fw-bold">Nombre:</span>
+                            <span class="ms-2">@accountData.AccountName</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-id-card text-secondary me-2"></i>
+                            <span class="fw-bold">Número:</span>
+                            <span class="ms-2">@accountData.AccountNumber</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-coins text-secondary me-2"></i>
+                            <span class="fw-bold">Saldo Disponible:</span>
+                            <span class="ms-2 @(accountData.Balance >= 0 ? "text-success" : "text-danger")">
+                                @accountData.Balance.ToString("C")
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+
+@if (transactionData == null)
+{
+    <div class="text-center">
+        <div class="spinner-border" role="status">
+            <span class="visually-hidden">Cargando...</span>
+        </div>
+        <p>Cargando historial...</p>
+    </div>
+}
+else if (!transactionData.Any())
+{
+    <div class="alert alert-info">No se encontraron trnnsacciones!</div>
+}
+else
+{
+    <Grid TItem="TransactionGetDto"
+          Class="table table-hover table-bordered table-striped"
+          Data="transactionData"
+          AllowPaging="true"
+          PageSize="5">
+
+        <GridColumns>
+            <GridColumn TItem="TransactionGetDto" HeaderText="Número de Cuenta" PropertyName="Account.AccountNumber">
+                @context.Account.AccountNumber
+            </GridColumn>
+            <GridColumn TItem="TransactionGetDto" HeaderText="Monto" PropertyName="Amount">
+                <span class="text-primary"> <strong>@context.Amount.ToString("C")</strong></span>
+            </GridColumn>
+            <GridColumn TItem="TransactionGetDto" HeaderText="Tipo" PropertyName="TransactionType.Name">
+                <span class="text-uppercase">@context.TransactionType.Name</span>
+            </GridColumn>
+
+            <GridColumn TItem="TransactionGetDto" HeaderText="Saldo Resultante" PropertyName="ResultingBalance">
+                <span class="fw-bold">@context.ResultingBalance.ToString("C")</span>
+            </GridColumn>
+            <GridColumn TItem="TransactionGetDto" HeaderText="Fecha Transacción" PropertyName="TransactionDate">
+                @context.TransactionDate.ToString("dd/MM/yyyy")
+            </GridColumn>
+        </GridColumns>
+    </Grid>
+}
+
+@code {
+    private IEnumerable<TransactionGetDto>? transactionData;
+    private AccountGetDto? accountData;
+    [Inject]
+    private IRepository Repository { get; set; } = null!;
+    [Parameter]
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(Id != null)
+        {
+            await GetAllTransactions();
+            await GetAccount();
+        }
+    }
+
+    private async Task GetAllTransactions()
+    {
+        try
+        {
+            var url = $"/api/Transaction/{Id}/account";
+            transactionData = await Repository.GetAsync<List<TransactionGetDto>>(url);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading accounts: {ex.Message}");
+            transactionData = Enumerable.Empty<TransactionGetDto>();
+        }
+    }
+
+    private async Task GetAccount()
+    {
+        try
+        {
+            var url = $"/api/Account";
+            accountData = await Repository.GetByIdAsync<AccountGetDto>(url, Id);
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading accounts: {ex.Message}");
+            transactionData = Enumerable.Empty<TransactionGetDto>();
+        }
+    }
+
+    private void NavigateBack()
+    {
+        Navigation.NavigateTo("/");
+    }
+
+
+
+}

@@ -26,12 +26,7 @@
                     <span class="input-group-text">-</span>
                     <input type="date" class="form-control form-control-sm"
                            @bind="toDateFilter" aria-label="Hasta" />
-                    @if (isInvalidDateRange)
-                    {
-                        <div class="invalid-feedback">
-                            La fecha final no puede ser menor que la fecha inicial
-                        </div>
-                    }
+                    
                 </div>
             </div>
 
@@ -47,7 +42,15 @@
                     </button>
                 </div>
             </div>
+            @if(isInvalidDateRange)
+            {
+                <div>
+                    <label class="small mb-1 text-danger">La fecha de Inicio no puede ser mayor que la fecha final.</label>
+                </div>
+            }
         </div>
+        
+        
     </div>
 </div>
 
@@ -75,11 +78,9 @@ else if (!transactionData.Any())
             <GridColumn TItem="TransactionGetDto" HeaderText="Número de Cuenta" PropertyName="Account.AccountNumber">
                 @context.Account.AccountNumber
             </GridColumn>
-
             <GridColumn TItem="TransactionGetDto" HeaderText="Monto" PropertyName="Amount">
-                @context.Amount
+                <span class="text-primary"> <strong>@context.Amount.ToString("C")</strong></span>
             </GridColumn>
-
             <GridColumn TItem="TransactionGetDto" HeaderText="Tipo" PropertyName="TransactionType.Name">
                 <span class="text-uppercase">@context.TransactionType.Name</span>
             </GridColumn>
@@ -87,11 +88,8 @@ else if (!transactionData.Any())
             <GridColumn TItem="TransactionGetDto" HeaderText="Saldo Resultante" PropertyName="ResultingBalance">
                 <span class="fw-bold">@context.ResultingBalance.ToString("C")</span>
             </GridColumn>
-
-            
-
             <GridColumn TItem="TransactionGetDto" HeaderText="Fecha Transacción" PropertyName="TransactionDate">
-                @context.TransactionDate.ToString("dd/MM/yyyy HH:mm")
+                @context.TransactionDate.ToString("dd/MM/yyyy")
             </GridColumn>
         </GridColumns>
     </Grid>
@@ -135,7 +133,6 @@ else if (!transactionData.Any())
 
         if (isInvalidDateRange)
         {
-            ToastService.Notify(new(ToastType.Warning, "La fecha de Inicio no puede ser mayor que la fecha final"));
             return Task.CompletedTask;
         };
 
@@ -152,6 +149,7 @@ else if (!transactionData.Any())
     {
         fromDateFilter = null;
         toDateFilter = null;
+        isInvalidDateRange = false;
         filteredTransactions = transactionData;
         await Task.CompletedTask;
     }
