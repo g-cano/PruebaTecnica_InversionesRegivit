@@ -39,18 +39,18 @@ Base de datos: SQL Server (Entity Framework Core)
 
 
 # Pasos para la Instalación
-1.Clonar el repositorio: git clone https://github.com/g-cano/PruebaTecnica_InversionesRegivit.git
-2.Restaurar la base de datos usando el script proporcionado.
-3.Configurar la cadena de conexión en appsettings.json.
+-Clonar el repositorio: git clone https://github.com/g-cano/PruebaTecnica_InversionesRegivit.git
+-Restaurar la base de datos usando el script proporcionado.
+-Configurar la cadena de conexión en appsettings.json.
 "ConnectionStrings": {
   "DefaultConnection": "Data Source=SERVERNAME=;Initial Catalog=Inversiones_Regivit;Integrated Security=True;Connect Timeout=30;Encrypt=False;TrustServerCertificate=False;ApplicationIntent=ReadWrite;MultiSubnetFailover=False"
 }
-4.Visual Studio:
--Click derecho en la solución → Propiedades
--En Proyectos de Inicio:
--Marcar Múltiples proyectos de inicio
--Establecer acciones:
--Server: Iniciar
--Client: Iniciar
--Ordenar con flechas para que el backend inicie primero
-5.No olvidar de importar la base de datos.
+-Visual Studio:
+--Click derecho en la solución → Propiedades
+--En Proyectos de Inicio:
+--Marcar Múltiples proyectos de inicio
+--Establecer acciones:
+--Server: Iniciar
+--Client: Iniciar
+--Ordenar con flechas para que el backend inicie primero
+-No olvidar de importar la base de datos.
