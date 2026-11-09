@@ -7,7 +7,10 @@ builder.Services.AddBlazorBootstrap();
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
-    .AddInteractiveServerComponents();
+       .AddInteractiveServerComponents(options =>
+    {
+        options.DetailedErrors = true;
+    });
 var url = "https://localhost:7281";
 builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(url) });
 builder.Services.AddScoped<IRepository, Repository>();
